@@ -7,8 +7,14 @@ set -e
 #   --values=./charts/postgresql-values.yml \
 #   --namespace postgres \
 #   --create-namespace
-helm install external-secrets ./charts/external-secrets/ --namespace external-secrets --create-namespace
-helm install redis ./charts/redis \
+# helm install external-secrets ./charts/external-secrets/ --namespace external-secrets --create-namespace
+# helm install redis ./charts/redis \
+#   --values=./charts/redis-values.yml \
+#   --namespace redis \
+#   --create-namespace
+
+helm install external-secrets external-secrets/external-secrets --namespace external-secrets --create-namespace
+helm install redis bitnami/redis \
   --values=./charts/redis-values.yml \
   --namespace redis \
   --create-namespace
