@@ -36,14 +36,16 @@ RUN adduser \
     django-user && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
+    mkdir /tmp && \
     chown -R django-user:django-user /vol && \
+    chown -R django-user:django-user /tmp && \
     chmod -R 755 /vol && \
     chmod -R +x /scripts
 
+ENV DEV=${DEV}
 
 COPY ./app /app
 ENV PATH="/scripts:/py/bin:/usr/bin:$PATH"
 USER django-user
 
-# VOLUME /vol/web
-CMD ["/scripts/entrypoint.sh"]
+CMD ["entrypoint.sh"]

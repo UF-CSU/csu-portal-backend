@@ -15,43 +15,14 @@ services:
              python manage.py migrate &&
              python manage.py init_superuser &&
              python manage.py runserver 0.0.0.0:8000"
-    environment:
-      - DJANGO_ENV=dev
-      - DB_HOST=clubs-dev-db
-      - DB_NAME=devdatabase
-      - DB_USER=devuser
-      - DB_PASS=devpass
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=*
-      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
-      - DJANGO_SUPERUSER_PASS=${DJANGO_SUPERUSER_PASS:-changeme}
-      - DJANGO_BASE_URL=${DJANGO_BASE_URL:-http://localhost:8000}
-      - CREATE_SUPERUSER=1
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-""}
-      - EMAIL_HOST_PASS=${EMAIL_HOST_PASS:-""}
-      - CONSOLE_EMAIL_BACKEND=${CONSOLE_EMAIL_BACKEND:-1}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-""}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-""}
-
-      - CSRF_TRUSTED_ORIGINS=http://localhost:8000
-      - CSRF_COOKIE_SECURE=0
-      - SESSION_COOKIE_SECURE=0
-
-      - CELERY_BROKER_URL=redis://clubs-dev-redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://clubs-dev-redis:6379/0
-      - CELERY_ACKS_LATE=True
-      - DJANGO_DB=postgresql
-      - DJANGO_REDIS_URL=redis://clubs-dev-redis:6379/1
-
-      - AWS_EXECUTION_ENV=0
-      - S3_STORAGE_BACKEND=0
+    env_file:
+      - .env
     depends_on:
       - postgres
       - redis
 
   postgres:
     image: postgres:13-alpine
-    container_name: clubs-dev-db
     volumes:
       - postgres-clubs-dev:/var/lib/postgresql/data
     environment:
@@ -61,7 +32,6 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: clubs-dev-redis
     ports:
       - 6379:6379
 
@@ -80,34 +50,8 @@ services:
       - redis
       - postgres
       - app
-    environment:
-      - DEBUG=1
-      - CELERY_BROKER_URL=redis://clubs-dev-redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://clubs-dev-redis:6379/0
-      - CELERY_ACKS_LATE=True
-
-      - POSTGRES_HOST=clubs-dev-db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=devdatabase
-      - POSTGRES_NAME=devdatabase
-      - POSTGRES_USER=devuser
-      - POSTGRES_PASSWORD=devpass
-
-      - DJANGO_DB=postgresql
-      - DJANGO_REDIS_URL=redis://clubs-dev-redis:6379/1
-      - DB_HOST=clubs-dev-db
-      - DB_NAME=devdatabase
-      - DB_USER=devuser
-      - DB_PASS=devpass
-
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-""}
-      - EMAIL_HOST_PASS=${EMAIL_HOST_PASS:-""}
-      - CONSOLE_EMAIL_BACKEND=${CONSOLE_EMAIL_BACKEND:-1}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-""}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-""}
-
-      - AWS_EXECUTION_ENV=0
-      - S3_STORAGE_BACKEND=0
+    env_file:
+      - .env
 
   celerybeat:
     build:
@@ -134,32 +78,8 @@ services:
       - postgres
       - celery
       - app
-    environment:
-      - DEBUG=1
-      - CELERY_BROKER_URL=redis://clubs-dev-redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://clubs-dev-redis:6379/0
-      - DJANGO_DB=postgresql
-
-      - POSTGRES_HOST=clubs-dev-db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=devdatabase
-      - POSTGRES_NAME=devdatabase
-      - POSTGRES_USER=devuser
-      - POSTGRES_PASSWORD=devpass
-
-      - DB_HOST=clubs-dev-db
-      - DB_NAME=devdatabase
-      - DB_USER=devuser
-      - DB_PASS=devpass
-
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-""}
-      - EMAIL_HOST_PASS=${EMAIL_HOST_PASS:-""}
-      - CONSOLE_EMAIL_BACKEND=${CONSOLE_EMAIL_BACKEND:-1}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-""}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-""}
-
-      - AWS_EXECUTION_ENV=0
-      - S3_STORAGE_BACKEND=0
+    env_file:
+      - .env
 
   coverage:
     image: nginx

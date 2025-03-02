@@ -9,31 +9,14 @@ services:
       - '8000:8000'
     volumes:
       - ./app:/app
-      - club-static:/vol/web
-      - ./generated:/generated
+      - static-clubs-network:/vol/web
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py init_superuser &&
              entrypoint.sh"
-    environment:
-      - PORT=9000
-      - DJANGO_ENV=network
-      - DB_HOST=clubs-network-db
-      - DB_NAME=devdatabase
-      - DB_USER=devuser
-      - DB_PASS=devpass
-      - DJANGO_BASE_URL=${DJANGO_BASE_URL:-http://localhost:8000}
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=*
-      - S3_STORAGE_BACKEND=0
-      - CREATE_SUPERUSER=1
-      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
-      - DJANGO_SUPERUSER_PASS=${DJANGO_SUPERUSER_PASS:-changeme}
-      
-      - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://localhost:8081,http://localhost:3000
-      - CSRF_COOKIE_SECURE=0
-      - SESSION_COOKIE_SECURE=0
+    env_file:
+      - .env
     depends_on:
       - postgres
     networks:
@@ -41,7 +24,6 @@ services:
 
   postgres:
     image: postgres:13-alpine
-    container_name: clubs-network-db
     volumes:
       - postgres-clubs-network:/var/lib/postgresql/data
     environment:
@@ -50,14 +32,68 @@ services:
       - POSTGRES_PASSWORD=devpass
     networks:
       - cluster
+      
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    networks:
+      - cluster
+
+  celery:
+    build:
+      context: .
+      args:
+        - DEV=true
+    restart: unless-stopped
+    user: django-user
+    command: ['celery', '-A', 'app', 'worker', '--loglevel=info']
+    volumes:
+      - ./app:/app
+      - static-clubs-network:/vol/web
+    depends_on:
+      - redis
+      - postgres
+      - app
+    env_file:
+      - .env
+    networks:
+      - cluster
+
+  celerybeat:
+    build:
+      context: .
+      args:
+        - DEV=true
+    user: django-user
+    restart: unless-stopped
+    command:
+      [
+        'celery',
+        '-A',
+        'app',
+        'beat',
+        '--loglevel=info',
+        '--scheduler',
+        'django_celery_beat.schedulers:DatabaseScheduler'
+      ]
+    volumes:
+      - ./app:/app
+      - static-clubs-network:/vol/web
+    depends_on:
+      - redis
+      - postgres
+      - celery
+      - app
+    env_file:
+      - .env
+    networks:
+      - cluster
 
 volumes:
   postgres-clubs-network:
-  club-static:
-    name: club-static
-    external: true
+  static-clubs-network:
 
 networks:
   cluster:
     name: clubs_cluster
-    external: true
