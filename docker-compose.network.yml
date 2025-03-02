@@ -9,20 +9,17 @@ services:
       - '8000:8000'
     volumes:
       - ./app:/app
-      - club-static:/vol/static
+      - club-static:/vol/web
       - ./generated:/generated
-      # - api-spec:/app/bin
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py init_superuser &&
              entrypoint.sh"
-    # env_file:
-    #   - .env
     environment:
       - PORT=9000
       - DJANGO_ENV=network
-      - DB_HOST=osc-network-db
+      - DB_HOST=clubs-network-db
       - DB_NAME=devdatabase
       - DB_USER=devuser
       - DB_PASS=devpass
@@ -44,9 +41,9 @@ services:
 
   postgres:
     image: postgres:13-alpine
-    container_name: osc-network-db
+    container_name: clubs-network-db
     volumes:
-      - postgres-osc-network:/var/lib/postgresql/data
+      - postgres-clubs-network:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=devdatabase
       - POSTGRES_USER=devuser
@@ -55,15 +52,12 @@ services:
       - cluster
 
 volumes:
-  postgres-osc-network:
+  postgres-clubs-network:
   club-static:
     name: club-static
     external: true
-  # api-spec:
-  #   name: api-spec
-  #   external: true
 
 networks:
   cluster:
-    name: jukebox_cluster
+    name: clubs_cluster
     external: true

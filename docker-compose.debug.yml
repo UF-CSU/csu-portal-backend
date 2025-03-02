@@ -16,9 +16,10 @@ services:
       - 5678:5678
     volumes:
       - ./app:/app
+      - static-clubs-debug:/vol/web
     environment:
       - DJANGO_ENV=dev
-      - DB_HOST=osc-debug-db
+      - DB_HOST=clubs-debug-db
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=devpass
@@ -38,14 +39,14 @@ services:
 
   postgres:
     image: postgres:13-alpine
-    container_name: osc-debug-db
+    container_name: clubs-debug-db
     volumes:
-      - gef-postgres:/var/lib/postgresql/data
+      - postgres-clubs-debug:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=devpass
 
 volumes:
-  gef-postgres:
-    name: osc-debug-db
+  postgres-clubs-debug:
+  static-clubs-debug:
