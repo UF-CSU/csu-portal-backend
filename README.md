@@ -1,10 +1,21 @@
-# OSC Member Manager
-[![Django Tests](https://github.com/ufosc/Club-Manager/actions/workflows/django-test.yml/badge.svg)](https://github.com/ufosc/Club-Manager/actions/workflows/django-test.yml) 
-[![Push Docker Images](https://github.com/ufosc/Club-Manager/actions/workflows/push-docker.yml/badge.svg)](https://github.com/ufosc/Club-Manager/actions/workflows/push-docker.yml)
+# Club Portal Backend
+
+[![Django Tests](https://github.com/ufosc/Club-Manager/actions/workflows/django-test.yml/badge.svg)](https://github.com/ufosc/Club-Manager/actions/workflows/django-test.yml)
 
 ## Getting Started
 
-Install Docker & docker-compose, then:
+### Prerequisites
+
+- Docker, Docker Compose: <https://docs.docker.com/desktop/>
+- Python: <https://www.python.org/downloads/>
+- VSCode: <https://code.visualstudio.com/download>
+
+Optional:
+
+- Taskfile for managing commands and local tasks: <https://taskfile.dev/installation/>
+- Anaconda for managing Python virtual environments: <https://www.anaconda.com/download>
+
+### Running Dev Server
 
 ```sh
 cp sample.env .env
@@ -23,25 +34,21 @@ To run unit tests:
 docker-compose run --rm app sh -c "python manage.py test"
 ```
 
-### Other Commands
+### Taskfile Commands
 
-Create a new database migration file:
+If you have Taskfile installed, you can use the following:
 
-```sh
-docker-compose run --rm app sh -c "python manage.py makemigrations"
-```
-
-Optionally, dry-run migration creation to see if models formatted correctly:
-
-```sh
-docker-compose run --rm app sh -c "python manage.py makemigrations --dry-run"
-```
-
-Apply the migration to the database:
-
-```sh
-docker-compose run --rm app sh -c "python manage.py migrate"
-```
+| Command                       | Purpose                                   |
+| ----------------------------- | ----------------------------------------- |
+| `task dev`                    | Start dev server                          |
+| `task network`                | Starts the server in "network" mode       |
+| `task test`                   | Run unit tests                            |
+| `task makemigrations`         | Create database migration files           |
+| `task makemigrations:dry-run` | Run makemigrations but don't create files |
+| `task migrate`                | Apply migration files to the database     |
+| `task lint`                   | Check code lint rules with Flake8         |
+| `task format`                 | Check but don't apply formatting rules    |
+| `task format:fix`             | Format codebase using Black               |
 
 ### Admin Dashboard
 
@@ -69,10 +76,3 @@ If you want to create a new admin without removing the old database, run this co
 ```sh
 docker-compose run --rm app sh -c "python manage.py createsuperuser --no-input"
 ```
-
-## Discussion
-
-If the docker-compose commands get too tedious, we may want to consider these _task managers_:
-
-- [just](https://github.com/casey/just?tab=readme-ov-file)
-- [go-task](https://taskfile.dev/)
