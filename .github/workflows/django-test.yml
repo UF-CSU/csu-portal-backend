@@ -21,8 +21,9 @@ jobs:
 
       - name: Build image
         run: |
+          cp sample.env .env
           docker-compose build
-          
+
       - name: Run Tests
         run: |
           docker-compose up postgres -d
@@ -31,7 +32,7 @@ jobs:
       - name: Stop containers
         run: |
           docker-compose down
-  
+
   code-lint-format:
     runs-on: ubuntu-latest
     steps:
@@ -45,15 +46,13 @@ jobs:
 
       - name: Build image
         run: |
+          cp sample.env .env
           docker-compose build
-      
+
       - name: Linting
         run: |
           make lint
-      
+
       - name: Formatting
         run: |
           make format
-          
-        
-      
