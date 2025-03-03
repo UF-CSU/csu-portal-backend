@@ -51,8 +51,6 @@ ALLOWED_HOSTS.extend([os.environ.get("DJANGO_BASE_URL")])
 BASE_URL = os.environ.get("DJANGO_BASE_URL", "")
 ALLOWED_HOSTS.extend([BASE_URL])
 
-if environ_bool("AWS_EXECUTION_ENV", 1):
-    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
 
 # Application definition
 
@@ -213,7 +211,6 @@ SESSION_COOKIE_HTTPONLY = False
 
 # Only allow cookies from these origins
 CSRF_TRUSTED_ORIGINS = environ_list("CSRF_TRUSTED_ORIGINS")
-CSRF_TRUSTED_ORIGINS.extend([BASE_URL])
 
 # Only allow cookies to be sent over HTTPS
 CSRF_COOKIE_SECURE = environ_bool("CSRF_COOKIE_SECURE", True)
@@ -289,6 +286,9 @@ CACHES = {
 ###############################
 # == Environment Overrides == #
 ###############################
+
+if environ_bool("AWS_EXECUTION_ENV", 1):
+    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
 
 if DEV:
     import socket

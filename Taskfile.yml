@@ -1,0 +1,39 @@
+# Taskfile docs: https://taskfile.dev/
+version: '3'
+
+tasks:
+  build:
+    desc: 'Build docker image if necessary'
+    sources:
+      - ./Dockerfile
+      - ./requirements*.txt
+    run: when_changed
+    cmds:
+      - docker-compose build
+  dev:
+    desc: 'Run the servers config in dev mode'
+    deps:
+      - build
+    cmds:
+      - docker-compose up
+
+  test:
+    desc: 'Run unit tests'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py test"
+
+  makemigrations--dry-run:
+    desc: 'Runs makemigrations command with --dry-run in django'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py makemigrations --dry-run"
+
+  makemigrations:
+    desc: 'Create migration files if any models have changed'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py makemigrations"

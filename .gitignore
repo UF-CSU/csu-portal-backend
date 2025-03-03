@@ -9,6 +9,9 @@ _*
 # .vscode/
 # docker-compose.debug.yml
 
+# Taskfile
+.task/
+
 # Custom
 _ignore/
 _ignore_*/
