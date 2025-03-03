@@ -28,11 +28,10 @@ def health_check(request):
     payload = {"status": 200, "message": "Systems operational."}
     return JsonResponse(payload, status=200)
 
+
 def styles(request):
 
-    return render(
-        request, "core/styles.html", context={}
-    )
+    return render(request, "core/styles.html", context={})
 
 
 def api_exception_handler(exc, context):
