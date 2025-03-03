@@ -17,6 +17,21 @@ tasks:
     cmds:
       - docker-compose up
 
+  lint:
+    desc: 'Lint python using Flake8'
+    cmds:
+      - docker-compose run --rm app sh -c "flake8"
+
+  format:
+    desc: 'Check code formatting using Black'
+    cmds:
+      - docker-compose run --rm app sh -c "black --check . && autoflake --in-place --remove-all-unused-imports --remove-unused-variables --check --quiet --recursive --exclude "migrations" . && isort --check ."
+
+  format:fix:
+    desc: 'Format code using Black'
+    cmds:
+      - docker-compose run --rm app sh -c "black . && autoflake --in-place --remove-all-unused-imports --remove-unused-variables --quiet --recursive --exclude "migrations" . && isort ."
+
   test:
     desc: 'Run unit tests'
     deps:
