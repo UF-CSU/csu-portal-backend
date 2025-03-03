@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import sys
 from pathlib import Path
+from socket import gethostbyname, gethostname
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,14 +36,13 @@ def environ_list(key: str, default=""):
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-changeme")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = environ_bool("DEBUG", 0)
+DEBUG = environ_bool("DJANGO_DEBUG", 0)
 """Debug mode implements better logging."""
 
-DEV = environ_bool("DEV") or os.environ.get("DJANGO_ENV", "") == "dev"
+DEV = os.environ.get("DEV", None) == "true"
 """Dev mode installs additional development packages."""
 
 TESTING = sys.argv[1:2] == ["test"]
-NETWORK = os.environ.get("DJANGO_ENV", "dev") == "network"
 
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS.extend(environ_list("DJANGO_ALLOWED_HOSTS"))
@@ -50,6 +50,7 @@ ALLOWED_HOSTS.extend([os.environ.get("DJANGO_BASE_URL")])
 
 BASE_URL = os.environ.get("DJANGO_BASE_URL", "")
 ALLOWED_HOSTS.extend([BASE_URL])
+
 
 # Application definition
 
@@ -125,10 +126,10 @@ WSGI_APPLICATION = "app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": os.environ.get("DB_HOST"),
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASS"),
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "NAME": os.environ.get("POSTGRES_NAME"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
     }
 }
 
@@ -175,10 +176,8 @@ STATICFILES_DIRS = [
 STATIC_URL = "/static/static/"
 MEDIA_URL = "/static/media/"
 
-# MEDIA_ROOT = "/vol/web/media"
-# STATIC_ROOT = "/vol/web/static"
-MEDIA_ROOT = "/vol/static/media"
-STATIC_ROOT = "/vol/static/static"
+MEDIA_ROOT = "/vol/web/media"
+STATIC_ROOT = "/vol/web/static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -193,7 +192,7 @@ REST_FRAMEWORK = {
 
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "OSC Member Manager API",
+    "TITLE": "Club Portal API",
     "DESCRIPTION": "Some cool app to manage users or something.",
     "VERSION": "1.0.0",
 }
@@ -213,7 +212,6 @@ SESSION_COOKIE_HTTPONLY = False
 
 # Only allow cookies from these origins
 CSRF_TRUSTED_ORIGINS = environ_list("CSRF_TRUSTED_ORIGINS")
-CSRF_TRUSTED_ORIGINS.extend([BASE_URL])
 
 # Only allow cookies to be sent over HTTPS
 CSRF_COOKIE_SECURE = environ_bool("CSRF_COOKIE_SECURE", True)
@@ -246,7 +244,7 @@ AWS_QUERYSTRING_AUTH = False
 ######################
 # == Email Config == #
 ######################
-CONSOLE_EMAIL_BACKEND = environ_bool("CONSOLE_EMAIL_BACKEND", 0)
+CONSOLE_EMAIL_BACKEND = environ_bool("DJANGO_CONSOLE_EMAIL_BACKEND", 0)
 
 if CONSOLE_EMAIL_BACKEND:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -258,7 +256,7 @@ EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "admin@example.com")
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "admin@example.com")
 
 #######################
 # == Celery Config == #
@@ -289,6 +287,9 @@ CACHES = {
 ###############################
 # == Environment Overrides == #
 ###############################
+
+if environ_bool("AWS_EXECUTION_ENV", 1):
+    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
 
 if DEV:
     import socket

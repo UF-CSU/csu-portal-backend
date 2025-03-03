@@ -61,7 +61,7 @@ class CommandTests(TestCase):
     def test_init_superuser_not_debug(self, *args, **kwargs):
         """Should not create super user if not debug mode."""
 
-        os.environ["DEBUG"] = "0"
+        os.environ["DJANGO_DEBUG"] = "0"
         call_command("init_superuser")
 
         self.assertEqual(User.objects.count(), 0)

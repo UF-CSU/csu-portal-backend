@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Entrypoint for command"""
 
-        if not bool(int(os.environ.get("DEBUG", 0))):
+        if not bool(int(os.environ.get("DJANGO_DEBUG", 0))):
             self.stdout.write(
                 self.style.ERROR(
                     "Unable to automate super user creation when not in DEBUG mode."
