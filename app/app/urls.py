@@ -48,6 +48,7 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("clubs/", include("clubs.urls")),
     path("dashboard/", include("dashboard.urls")),
+    path('oauth/', include('allauth.urls')),
 ]
 
 if DEV:

@@ -15,7 +15,9 @@ RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk add --update --no-cache postgresql-client jpeg-dev && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base gcc musl-dev zlib zlib-dev linux-headers openssl-dev postgresql-dev && \
+    build-base gcc musl-dev zlib zlib-dev linux-headers \
+    libressl libffi-dev libxslt-dev libxml2-dev xmlsec-dev xmlsec \
+    postgresql-dev && \
     /py/bin/pip install uwsgi==2.0.27 --retries 10
 
 COPY ./requirements.txt /tmp/requirements.txt
