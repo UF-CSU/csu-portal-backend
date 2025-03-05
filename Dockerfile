@@ -23,17 +23,16 @@ RUN python -m venv /py && \
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./scripts /scripts
     
 RUN /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
     fi && \
     rm -rf /tmp && \
-    apk del .tmp-build-deps
-
-COPY ./scripts /scripts
-
-RUN adduser \
+    apk del .tmp-build-deps && \
+    # Create new user
+    adduser \
     --disabled-password \
     --no-create-home \
     django-user && \
