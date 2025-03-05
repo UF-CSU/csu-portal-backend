@@ -232,9 +232,12 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/auth/login/"
 AUTHENTICATION_BACKENDS = [
-    "core.backend.CustomBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
+    "core.backend.CustomBackend",
 ]
+
+# Used for logging in a user via api
+DEFAULT_AUTH_BACKEND = "core.backend.CustomBackend"
 
 # OAuth Settings
 # Docs: https://docs.allauth.org/en/latest/

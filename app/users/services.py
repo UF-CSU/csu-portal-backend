@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest
 
+from app.settings import DEFAULT_AUTH_BACKEND
 from users.models import User
 
 
@@ -24,7 +25,7 @@ class UserService:
     def login_user(cls, request: HttpRequest, user: User):
         """Creates a new user session."""
 
-        return login(request, user)
+        return login(request, user, backend=DEFAULT_AUTH_BACKEND)
 
     @classmethod
     def authenticate_user(
