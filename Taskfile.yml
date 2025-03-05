@@ -39,7 +39,7 @@ tasks:
     cmds:
       - docker-compose run --rm app sh -c "python manage.py test"
 
-  makemigrations--dry-run:
+  makemigrations:dry-run:
     desc: 'Runs makemigrations command with --dry-run in django'
     deps:
       - build
@@ -52,3 +52,15 @@ tasks:
       - build
     cmds:
       - docker-compose run --rm app sh -c "python manage.py makemigrations"
+
+  migrate:
+    desc: 'Apply migrations to the database.'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py migrate"
+
+  push-docker:clubs:
+    desc: 'Push docker image for clubs server'
+    cmds:
+      - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile . --push

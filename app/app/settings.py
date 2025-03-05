@@ -72,6 +72,10 @@ INSTALLED_APPS = [
     "analytics",
     "clubs",
     "clubs.polls",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 ]
 
 MIDDLEWARE = [
@@ -84,6 +88,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "core.middleware.TimezoneMiddleware",
 ]
 
@@ -226,7 +231,28 @@ CORS_ALLOW_CREDENTIALS = True
 AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/auth/login/"
-AUTHENTICATION_BACKENDS = ["core.backend.CustomBackend"]
+AUTHENTICATION_BACKENDS = [
+    "allauth.account.auth_backends.AuthenticationBackend",
+    "core.backend.CustomBackend",
+]
+
+# Used for logging in a user via api
+DEFAULT_AUTH_BACKEND = "core.backend.CustomBackend"
+
+# OAuth Settings
+# Docs: https://docs.allauth.org/en/latest/
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "APP": {
+            "client_id": os.environ["GOOGLE_CLIENT_ID"],
+            "secret": os.environ["GOOGLE_CLIENT_SECRET"],
+        },
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+    }
+}
 
 
 ########################
