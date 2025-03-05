@@ -14,11 +14,12 @@ ARG DEV=false
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk add --update --no-cache postgresql-client jpeg-dev && \
+    apk add --update --no-cache xmlsec-dev && \
     apk add --update --no-cache --virtual .tmp-build-deps \
     build-base gcc musl-dev zlib zlib-dev linux-headers \
-    libressl libffi-dev libxslt-dev libxml2-dev xmlsec-dev xmlsec \
+    libressl libffi-dev libxslt-dev libxml2-dev \
     postgresql-dev && \
-    /py/bin/pip install uwsgi==2.0.27 --retries 10
+    /py/bin/pip install uwsgi==2.0.28 --retries 10
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt

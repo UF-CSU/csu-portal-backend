@@ -59,3 +59,8 @@ tasks:
       - build
     cmds:
       - docker-compose run --rm app sh -c "python manage.py migrate"
+
+  push-docker:clubs:
+    desc: 'Push docker image for clubs server'
+    cmds:
+      - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile . --push

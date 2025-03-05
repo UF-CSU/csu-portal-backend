@@ -237,6 +237,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # OAuth Settings
+# Docs: https://docs.allauth.org/en/latest/
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
