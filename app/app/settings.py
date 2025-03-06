@@ -245,14 +245,16 @@ SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
         "APP": {
-            "client_id": os.environ["GOOGLE_CLIENT_ID"],
-            "secret": os.environ["GOOGLE_CLIENT_SECRET"],
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID", None),
+            "secret": os.environ.get("GOOGLE_CLIENT_SECRET", None),
         },
         "AUTH_PARAMS": {
             "access_type": "online",
         },
     }
 }
+
+SOCIALACCOUNT_ADAPTER = "core.oauth.CustomAdapter"
 
 
 ########################
