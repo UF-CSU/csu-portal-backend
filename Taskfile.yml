@@ -10,12 +10,28 @@ tasks:
     run: when_changed
     cmds:
       - docker-compose build
+
+  build:network:
+    sources:
+      - ./Dockerfile
+      - ./requirements*.txt
+    run: when_changed
+    cmds:
+      - docker-compose -f docker-compose.network.yml build
+  
   dev:
     desc: 'Run the servers config in dev mode'
     deps:
       - build
     cmds:
       - docker-compose up
+
+  network:
+    desc: 'Run server in network mode'
+    deps:
+      - build:network
+    cmds:
+      - docker-compose -f docker-compose.network.yml up
 
   lint:
     desc: 'Lint python using Flake8'

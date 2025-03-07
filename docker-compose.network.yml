@@ -5,18 +5,14 @@ services:
       args:
         - DEV=true
     container_name: club-app-network
-    ports:
-      - '8000:8000'
     volumes:
       - ./app:/app
       - static-clubs-network:/vol/web
-    command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py init_superuser &&
-             entrypoint.sh"
+
     env_file:
       - .env
+    environment:
+      - PORT=9000
     depends_on:
       - postgres
     networks:
@@ -32,7 +28,7 @@ services:
       - POSTGRES_PASSWORD=devpass
     networks:
       - cluster
-      
+
   redis:
     image: redis:alpine
     ports:
@@ -90,6 +86,21 @@ services:
     networks:
       - cluster
 
+  proxy:
+    build:
+      context: ./deploy/proxy/
+    ports:
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - cluster
+    depends_on:
+      - app
+    volumes:
+      - static-clubs-network:/vol/web
+    environment:
+      - SERVER_URI=club-app-network:9000
+
 volumes:
   postgres-clubs-network:
   static-clubs-network:
@@ -97,3 +108,4 @@ volumes:
 networks:
   cluster:
     name: clubs_cluster
+    # driver: bridge

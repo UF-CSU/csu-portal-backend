@@ -6,6 +6,8 @@ import uuid
 from enum import Enum
 from typing import Any, ClassVar, Generic, MutableMapping, Optional, Self
 
+from django.core.validators import MinLengthValidator
+from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -191,3 +193,27 @@ class UniqueModel(ModelBase):
 
     class Meta:
         abstract = True
+
+
+class Color(models.TextChoices):
+    """Default colors that tags can have."""
+
+    RED = "red", _("Red")
+    ORANGE = "orange", _("Orange")
+    YELLOW = "yellow", _("Yellow")
+    GREEN = "green", _("Green")
+    BLUE = "blue", _("Blue")
+    PURPLE = "purple", _("Purple")
+    GREY = "grey", _("Grey")
+
+
+class Tag(ModelBase):
+    """Represents a category, tag, status, etc an object can have."""
+
+    name = models.CharField(max_length=16, validators=[MinLengthValidator(2)])
+    color = models.CharField(choices=Color.choices, default=Color.GREY)
+    order = models.IntegerField(default=0, blank=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["order", "name"]
