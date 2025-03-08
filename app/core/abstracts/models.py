@@ -6,10 +6,10 @@ import uuid
 from enum import Enum
 from typing import Any, ClassVar, Generic, MutableMapping, Optional, Self
 
-from django.core.validators import MinLengthValidator
-from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MinLengthValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from utils.types import T
 

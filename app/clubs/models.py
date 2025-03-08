@@ -312,8 +312,6 @@ class RecurringEvent(EventFields):
 class EventTag(Tag):
     """Group together different types of events."""
 
-    pass
-
 
 class EventManager(ManagerBase["Event"]):
     """Manage event queries."""
