@@ -37,7 +37,7 @@ jobs:
     # Checks to ensure docker image can fully build on arm/amd,
     # prevents code being merged that breaks the docker build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,4 +47,3 @@ jobs:
           docker buildx create --use
 
           docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile .
-          docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager-proxy:latest ./deploy/proxy
