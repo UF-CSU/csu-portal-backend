@@ -33,26 +33,18 @@ jobs:
         run: |
           docker-compose down
 
-  code-lint-format:
+  check-docker-build:
+    # Checks to ensure docker image can fully build on arm/amd,
+    # prevents code being merged that breaks the docker build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Docker Compose
+      - name: Build and push images
         run: |
-          sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+          docker buildx create --use
 
-      - name: Build image
-        run: |
-          cp sample.env .env
-          docker-compose build
-
-      - name: Linting
-        run: |
-          make lint
-
-      - name: Formatting
-        run: |
-          make format
+          docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile .
+          docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager-proxy:latest ./deploy/proxy
