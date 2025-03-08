@@ -83,7 +83,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -245,14 +245,16 @@ SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
         "APP": {
-            "client_id": os.environ["GOOGLE_CLIENT_ID"],
-            "secret": os.environ["GOOGLE_CLIENT_SECRET"],
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID", None),
+            "secret": os.environ.get("GOOGLE_CLIENT_SECRET", None),
         },
         "AUTH_PARAMS": {
             "access_type": "online",
         },
     }
 }
+
+SOCIALACCOUNT_ADAPTER = "core.oauth.CustomAdapter"
 
 
 ########################
@@ -287,6 +289,9 @@ DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "admin@example.
 #######################
 # == Celery Config == #
 #######################
+DJANGO_ENABLE_CELERY = environ_bool("DJANGO_ENABLE_CELERY", 1)
+"""When disabled, runs as a single server."""
+
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
 CELERY_TASK_ACKS_LATE = bool(int(os.environ.get("CELERY_TASK_ACKS_LATE", "1")))
@@ -302,12 +307,19 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Custom schedules
 CELERY_BEAT_SCHEDULE = {}
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": os.environ.get("DJANGO_REDIS_URL"),
-    },
-}
+DJANGO_REDIS_URL = os.environ.get("DJANGO_REDIS_URL", None)
+
+if DJANGO_REDIS_URL is not None:
+    assert (
+        DEV is True or DEBUG is True
+    ), "Django needs a redis server in production mode."
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.environ.get("DJANGO_REDIS_URL"),
+        }
+    }
 
 
 ###############################

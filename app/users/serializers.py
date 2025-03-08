@@ -16,11 +16,14 @@ class UserClubNestedSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(source="club.id", read_only=True)
     name = serializers.CharField(source="club.name", read_only=True)
-    role = serializers.CharField(read_only=True)
+    # TODO: Add role, permissions
 
     class Meta:
         model = Club
-        fields = ["id", "name", "role"]
+        fields = [
+            "id",
+            "name",
+        ]
 
 
 class UserSerializer(ModelSerializerBase):

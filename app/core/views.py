@@ -29,11 +29,6 @@ def health_check(request):
     return JsonResponse(payload, status=200)
 
 
-def styles(request):
-
-    return render(request, "core/styles.html", context={})
-
-
 def api_exception_handler(exc, context):
     """Custom exception handler for api."""
     response = exception_handler(exc, context)

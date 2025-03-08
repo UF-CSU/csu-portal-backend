@@ -1,13 +1,13 @@
 server {
   listen 8080;
-  resolver "$DNS_RESOLVER" valid=5s;
+  # resolver "$DNS_RESOLVER" valid=5s;
   
   location /static {
-    alias /vol/static;
+    alias /vol/web;
   }
   
   location / {
-    uwsgi_pass "$CLUB_MANAGER_URI";
+    uwsgi_pass "$SERVER_URI";
     
     proxy_set_header        Host "$host";
     proxy_set_header        X-Forwarded-For "$proxy_add_x_forwarded_for";

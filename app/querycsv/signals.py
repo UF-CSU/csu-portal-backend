@@ -2,6 +2,7 @@ from typing import Optional
 
 from django import dispatch
 
+from lib.celery import delay_task
 from querycsv.models import QueryCsvUploadJob
 from querycsv.tasks import process_csv_job_task
 
@@ -34,4 +35,4 @@ def on_process_csv_job_signal(sender, instance: Optional[QueryCsvUploadJob], **k
     if not instance:
         return
 
-    process_csv_job_task.delay(job_id=instance.pk)
+    delay_task(process_csv_job_task, job_id=instance.pk)

@@ -10,12 +10,28 @@ tasks:
     run: when_changed
     cmds:
       - docker-compose build
+
+  build:network:
+    sources:
+      - ./Dockerfile
+      - ./requirements*.txt
+    run: when_changed
+    cmds:
+      - docker-compose -f docker-compose.network.yml build
+  
   dev:
     desc: 'Run the servers config in dev mode'
     deps:
       - build
     cmds:
       - docker-compose up
+
+  network:
+    desc: 'Run server in network mode'
+    deps:
+      - build:network
+    cmds:
+      - docker-compose -f docker-compose.network.yml up
 
   lint:
     desc: 'Lint python using Flake8'
@@ -64,3 +80,8 @@ tasks:
     desc: 'Push docker image for clubs server'
     cmds:
       - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile . --push
+  
+  push-docker:proxy:
+    desc: 'Push docker image for clubs proxy server'
+    cmds:
+      - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager-proxy:latest ./deploy/proxy --push

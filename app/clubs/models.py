@@ -14,7 +14,7 @@ from django.utils.timezone import datetime
 from django.utils.translation import gettext_lazy as _
 
 from analytics.models import Link
-from core.abstracts.models import ManagerBase, ModelBase, Scope, UniqueModel
+from core.abstracts.models import ManagerBase, ModelBase, Scope, Tag, UniqueModel
 from users.models import User
 from utils.dates import get_day_count
 from utils.helpers import get_full_url
@@ -309,6 +309,12 @@ class RecurringEvent(EventFields):
         return get_day_count(self.start_date, end_date, self.day)
 
 
+class EventTag(Tag):
+    """Group together different types of events."""
+
+    pass
+
+
 class EventManager(ManagerBase["Event"]):
     """Manage event queries."""
 
@@ -326,9 +332,6 @@ class EventManager(ManagerBase["Event"]):
         event = super().create(
             club=club, name=name, start_at=start_at, end_at=end_at, **kwargs
         )
-
-        # if create_attendance_link:
-        #     EventAttendanceLink.objects.create(event=event, reference="Default")
 
         return event
 
@@ -353,6 +356,8 @@ class Event(EventFields):
         blank=True,
         related_name="events",
     )
+
+    tags = models.ManyToManyField(EventTag, blank=True)
 
     # Foreign Relationships
     attendance_links: models.QuerySet["EventAttendanceLink"]

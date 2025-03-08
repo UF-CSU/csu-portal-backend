@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -14,6 +14,12 @@ for file in $FILES; do
   mkdir -p $(dirname /etc/nginx/conf.d/$filename)
   envsubst "`env | awk -F = '{printf \" $$%s\", $$1}'`" < $file > /etc/nginx/conf.d/$filename
 done
+
+#################################################
+### Wait For Required Hosts
+#################################################
+
+sleep ${DELAY:-"15s"}
 
 #################################################
 ### Start NGINX
