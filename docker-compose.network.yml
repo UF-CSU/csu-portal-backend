@@ -2,8 +2,8 @@ services:
   app:
     build:
       context: .
-      args:
-        - DEV=true
+      # args:
+      #   - DEV=true
     container_name: club-app-network
     volumes:
       - ./app:/app
@@ -13,6 +13,11 @@ services:
       - .env
     environment:
       - PORT=9000
+      - CELERY_BROKER_URL=redis://clubs-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://clubs-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://clubs-network-redis:6379/1
+      - POSTGRES_HOST=postgres-clubs-network
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000
     depends_on:
       - postgres
     networks:
@@ -20,6 +25,7 @@ services:
 
   postgres:
     image: postgres:13-alpine
+    container_name: postgres-clubs-network
     volumes:
       - postgres-clubs-network:/var/lib/postgresql/data
     environment:
@@ -31,6 +37,7 @@ services:
 
   redis:
     image: redis:alpine
+    container_name: clubs-network-redis
     ports:
       - 6379:6379
     networks:
@@ -39,8 +46,8 @@ services:
   celery:
     build:
       context: .
-      args:
-        - DEV=true
+      # args:
+      #   - DEV=true
     restart: unless-stopped
     user: django-user
     command: ['celery', '-A', 'app', 'worker', '--loglevel=info']
@@ -53,14 +60,19 @@ services:
       - app
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=redis://clubs-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://clubs-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://clubs-network-redis:6379/1
+      - POSTGRES_HOST=postgres-clubs-network
     networks:
       - cluster
 
   celerybeat:
     build:
       context: .
-      args:
-        - DEV=true
+      # args:
+      #   - DEV=true
     user: django-user
     restart: unless-stopped
     command:
@@ -83,6 +95,11 @@ services:
       - app
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=redis://clubs-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://clubs-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://clubs-network-redis:6379/1
+      - POSTGRES_HOST=postgres-clubs-network
     networks:
       - cluster
 
