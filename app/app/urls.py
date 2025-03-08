@@ -35,6 +35,7 @@ apipatterns = [
     path("user/", include("users.apis")),
     path("club/", include("clubs.apis")),
     path("club/poll/", include("clubs.polls.apis")),
+    path("oauth/", include("allauth.headless.urls")),
 ]
 
 urlpatterns = [

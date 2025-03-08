@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import sys
 from pathlib import Path
+import sentry_sdk  # type: ignore
 from socket import gethostbyname, gethostname
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -73,6 +74,7 @@ INSTALLED_APPS = [
     "clubs",
     "clubs.polls",
     "allauth",
+    "allauth.headless",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
@@ -257,9 +259,10 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_ADAPTER = "core.oauth.CustomAdapter"
 
 
-########################
-# ==  AWS S3 Config == #
-########################
+############################
+# ==  Production Config == #
+############################
+# AWS S3
 S3_STORAGE_BACKEND = bool(int(os.environ.get("S3_STORAGE_BACKEND", 1)))
 if S3_STORAGE_BACKEND is True:
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
@@ -268,6 +271,9 @@ AWS_DEFAULT_ACL = "public-read"
 AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.environ.get("S3_STORAGE_BUCKET_REGION", "us-east-1")
 AWS_QUERYSTRING_AUTH = False
+
+# Sentry
+sentry_sdk.init(dsn=os.environ.get("SENTRY_DSN", ""), send_default_pii=True)
 
 ######################
 # == Email Config == #
