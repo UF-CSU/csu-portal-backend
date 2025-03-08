@@ -289,6 +289,9 @@ DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "admin@example.
 #######################
 # == Celery Config == #
 #######################
+DJANGO_ENABLE_CELERY = environ_bool("DJANGO_ENABLE_CELERY", 1)
+"""When disabled, runs as a single server."""
+
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
 CELERY_TASK_ACKS_LATE = bool(int(os.environ.get("CELERY_TASK_ACKS_LATE", "1")))
@@ -304,12 +307,19 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Custom schedules
 CELERY_BEAT_SCHEDULE = {}
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": os.environ.get("DJANGO_REDIS_URL"),
-    },
-}
+DJANGO_REDIS_URL = os.environ.get("DJANGO_REDIS_URL", None)
+
+if DJANGO_REDIS_URL is not None:
+    assert (
+        DEV is True or DEBUG is True
+    ), "Django needs a redis server in production mode."
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.environ.get("DJANGO_REDIS_URL"),
+        }
+    }
 
 
 ###############################

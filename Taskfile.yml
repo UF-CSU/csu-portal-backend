@@ -80,3 +80,8 @@ tasks:
     desc: 'Push docker image for clubs server'
     cmds:
       - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile . --push
+  
+  push-docker:proxy:
+    desc: 'Push docker image for clubs proxy server'
+    cmds:
+      - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager-proxy:latest ./deploy/proxy --push
