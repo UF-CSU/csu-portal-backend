@@ -2,14 +2,12 @@
 Views for the user API.
 """
 
-# access base classes/methods django uses to create objects to override them
-from rest_framework import generics, mixins
-from rest_framework.authtoken.models import Token
+from rest_framework import authentication, generics
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 
-from core.abstracts.viewsets import ModelViewSetBase, ViewSetBase
-from users.serializers import AuthTokenSerializer, TokenSerializer, UserSerializer
+from core.abstracts.viewsets import ModelViewSetBase
+from users.serializers import UserSerializer
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -18,23 +16,14 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 
-class CreateTokenView(ObtainAuthToken):
+class AuthTokenView(ObtainAuthToken, generics.RetrieveAPIView, generics.GenericAPIView):
     """Create a new auth token for user."""
 
-    serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-    authentication_classes = ModelViewSetBase.authentication_classes
-
-
-class RetrieveTokenView(mixins.RetrieveModelMixin, ViewSetBase):
-    """Separate view for obtaining token from session."""
-
-    serializer_class = TokenSerializer
-
-    def get_object(self):
-
-        token, _ = Token.objects.get_or_create(user=self.request.user)
-        return token
+    authentication_classes = [
+        authentication.TokenAuthentication,
+        authentication.SessionAuthentication,
+    ]
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView):

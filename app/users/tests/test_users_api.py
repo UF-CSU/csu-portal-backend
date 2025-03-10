@@ -77,7 +77,7 @@ class PublicUserApiTests(TestCase):
         create_user(**user_details)
 
         payload = {  # sent to api in post
-            "email": user_details["email"],
+            "username": user_details["email"],
             "password": user_details["password"],
         }
         res = self.client.post(LOGIN_TOKEN_URL, payload)
@@ -89,7 +89,7 @@ class PublicUserApiTests(TestCase):
         """Test returns error if credentials invalid."""
         create_user(email="test@example.com", password="goodpass")
 
-        payload = {"email": "test@example.com", "password": "badpass"}
+        payload = {"username": "test@example.com", "password": "badpass"}
         res = self.client.post(LOGIN_TOKEN_URL, payload)
 
         self.assertNotIn("token", res.data)
@@ -97,7 +97,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_blank_password(self):
         """Test posting a blank password returns an error."""
-        payload = {"email": "test@example.com", "password": ""}
+        payload = {"username": "test@example.com", "password": ""}
         res = self.client.post(LOGIN_TOKEN_URL, payload)
 
         self.assertNotIn("token", res.data)

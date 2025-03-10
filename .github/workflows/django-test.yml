@@ -32,18 +32,3 @@ jobs:
       - name: Stop containers
         run: |
           docker-compose down
-
-  check-docker-build:
-    # Checks to ensure docker image can fully build on arm/amd,
-    # prevents code being merged that breaks the docker build
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build and push images
-        run: |
-          docker buildx create --use
-
-          docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile .

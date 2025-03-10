@@ -13,8 +13,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import sys
 from pathlib import Path
-import sentry_sdk  # type: ignore
 from socket import gethostbyname, gethostname
+
+import sentry_sdk  # type: ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,6 +67,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_spectacular",
+    "allauth",
+    "allauth.headless",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "core",
     "users",
     "users.authentication",
@@ -73,11 +79,6 @@ INSTALLED_APPS = [
     "analytics",
     "clubs",
     "clubs.polls",
-    "allauth",
-    "allauth.headless",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware", # TODO: Enable CSRF, implement with frontend
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -255,8 +256,6 @@ SOCIALACCOUNT_PROVIDERS = {
         },
     }
 }
-
-SOCIALACCOUNT_ADAPTER = "core.oauth.CustomAdapter"
 
 
 ############################
