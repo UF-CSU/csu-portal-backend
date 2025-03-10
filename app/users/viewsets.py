@@ -2,6 +2,7 @@
 Views for the user API.
 """
 
+from django.urls import reverse_lazy
 from rest_framework import authentication, generics, mixins
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
 from core.abstracts.viewsets import ModelViewSetBase, ViewSetBase
-from users.serializers import UserSerializer
+from users.serializers import OauthDirectorySerializer, UserSerializer
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -32,35 +33,8 @@ class AuthTokenView(
     ]
 
     def retrieve(self, request, *args, **kwargs):
-        # The default doesn't save request, so need to do that manually
         token, _ = Token.objects.get_or_create(user=request.user)
         return Response({"token": token.key})
-
-
-# class CreateTokenView(ObtainAuthToken):
-#     """Create a new auth token for user."""
-
-#     serializer_class = AuthTokenSerializer
-#     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-#     authentication_classes = [
-#         authentication.TokenAuthentication,
-#         authentication.SessionAuthentication,
-#     ]
-
-
-# class RetrieveTokenView(mixins.RetrieveModelMixin, ViewSetBase):
-#     """Separate view for obtaining token from session."""
-
-#     serializer_class = AuthTokenSerializer
-#     authentication_classes = [
-#         authentication.TokenAuthentication,
-#         authentication.SessionAuthentication,
-#     ]
-
-#     def get_object(self):
-
-#         token, _ = Token.objects.get_or_create(user=self.request.user)
-#         return token
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView):
@@ -72,5 +46,21 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         """Retrieve and return the authenticated user."""
-
         return self.request.user
+
+
+class OauthDirectoryView(generics.RetrieveAPIView):
+    """
+    List available api routes to use with OAuth.
+
+    To use oauth, submit a post request to the given route,
+    include the fields: provider, callback_url, and process.
+    """
+
+    serializer_class = OauthDirectorySerializer
+
+    def get_object(self):
+        """List available oauth providers, all will have the same url."""
+        return {
+            "google": reverse_lazy("headless:app:socialaccount:redirect_to_provider")
+        }

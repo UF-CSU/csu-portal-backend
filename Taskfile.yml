@@ -18,7 +18,7 @@ tasks:
     run: when_changed
     cmds:
       - docker-compose -f docker-compose.network.yml build
-  
+
   dev:
     desc: 'Run the servers config in dev mode'
     deps:
@@ -80,8 +80,15 @@ tasks:
     desc: 'Push docker image for clubs server'
     cmds:
       - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager:latest -f ./Dockerfile . --push
-  
+
   push-docker:proxy:
     desc: 'Push docker image for clubs proxy server'
     cmds:
       - docker buildx build --platform=linux/amd64,linux/arm64 -t ikehunter5/club-manager-proxy:latest ./deploy/proxy --push
+
+  show_urls:
+    desc: 'List available urls in django'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py show_urls"

@@ -25,4 +25,5 @@ urlpatterns = [
             ]
         ),
     ),
+    path("oauth-directory/", viewsets.OauthDirectoryView.as_view()),
 ]
