@@ -23,5 +23,10 @@ urlpatterns = [
         ),
         name="join-event-done",
     ),
-    path("polls/", include("clubs.polls.urls")),
+    path(
+        "club/<int:club_id>/event/<int:event_id>/calendar/",
+        views.download_event_calendar,
+        name="get-event-calendar"
+    ),
+    path("polls/", include("clubs.polls.urls"))
 ]
