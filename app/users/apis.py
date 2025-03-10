@@ -13,7 +13,7 @@ urlpatterns = [
     path("login/", RedirectView.as_view(url=reverse_lazy("api-users:login"))),
     path(
         "token/",
-        viewsets.AuthTokenView.as_view(),
+        viewsets.AuthTokenView.as_view({"get": "retrieve", "post": "post"}),
         name="login",
     ),
     path("me/", viewsets.ManageUserView.as_view(), name="me"),
