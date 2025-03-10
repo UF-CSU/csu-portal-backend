@@ -2,10 +2,8 @@
 Serializers for the user API View
 """
 
-from django.contrib.auth import authenticate, get_user_model
-from django.utils.translation import gettext as _  # convention import name
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 
 from clubs.models import Club
 from core.abstracts.serializers import ModelSerializerBase
@@ -70,43 +68,3 @@ class UserSerializer(ModelSerializerBase):
             user.save()
 
         return user
-
-
-# just base off normal serializer, no need for model serializer methods
-class AuthTokenSerializer(serializers.Serializer):
-    """Serialzer for the user auth token"""
-
-    email = serializers.EmailField()
-    password = serializers.CharField(
-        # ensure text is hidden in browsable api
-        style={"input_type": "password"},
-        trim_whitespace=False,  # ensure doesn't trim, in case it's deliberate
-    )
-
-    # called at validation stage by views when data posted to view
-    def validate(self, attrs):  # attrs: attributes
-        """Validate and authenticate the user."""
-        email = attrs.get("email")
-        password = attrs.get("password")
-        user = authenticate(
-            request=self.context.get("request"),  # pass request context
-            username=email,
-            password=password,
-        )  # returns user if user found
-        if not user:
-            msg = _("Unable to authenticate with provided credentials")
-            raise serializers.ValidationError(
-                msg, code="authorization"
-            )  # returns bad request
-        attrs["user"] = user  # add user info to attributes, pass it back
-        return attrs
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    """Display user token in API."""
-
-    token = serializers.CharField(source="key")
-
-    class Meta:
-        model = Token
-        fields = ("token",)
