@@ -68,3 +68,9 @@ class UserSerializer(ModelSerializerBase):
             user.save()
 
         return user
+
+
+class OauthDirectorySerializer(serializers.Serializer):
+    """Display available OAuth api routes."""
+
+    google = serializers.CharField()
