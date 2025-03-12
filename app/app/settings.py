@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
     "core",
     "users",
     "users.authentication",
@@ -254,8 +255,17 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {
             "access_type": "online",
         },
+    },
+    "github": {
+        "SCOPE": ["user:email"],
+        "APP": {
+            "client_id": os.environ.get("GITHUB_CLIENT_ID", None),
+            "secret": os.environ.get("GITHUB_CLIENT_SECRET", None),
+        }
     }
 }
+
+SOCIALACCOUNT_QUERY_EMAIL = True
 
 
 ############################
