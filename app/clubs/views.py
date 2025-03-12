@@ -53,6 +53,15 @@ def download_event_calendar(request: HttpRequest, club_id: int, event_id: int):
     return FileResponse(file, as_attachment=True, filename=f"{club_name}_{event_name}.ics")
 
 
+def download_club_calendar(request: HttpRequest, club_id: int):
+    club = get_object_or_404(Club, id=club_id)
+    
+    club_svc = ClubService(club)
+    file = club_svc.get_calendar()
+    
+    club_name = re.sub(r'\s+', '_', club.name)
+    return FileResponse(file, as_attachment=True, filename=f"{club_name}.ics")
+
 @login_required()
 def available_clubs_view(request: HttpRequest):
     """Display list of clubs to user for them to join."""
