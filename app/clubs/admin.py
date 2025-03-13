@@ -1,4 +1,5 @@
 from typing import Optional
+
 from django.contrib import admin
 
 from clubs.forms import TeamMembershipForm

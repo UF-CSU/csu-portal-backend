@@ -43,13 +43,9 @@ class DayChoice(models.IntegerChoices):
 class EventTag(Tag):
     """Group together different types of events."""
 
-    pass
-
 
 class ClubTag(Tag):
     """Group clubs together based on topics."""
-
-    pass
 
 
 def get_default_founding_year():

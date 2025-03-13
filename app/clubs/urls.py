@@ -26,12 +26,12 @@ urlpatterns = [
     path(
         "club/<int:club_id>/event/<int:event_id>/calendar/",
         views.download_event_calendar,
-        name="get-event-calendar"
+        name="get-event-calendar",
     ),
     path(
         "club/<int:club_id>/calendar/",
         views.download_club_calendar,
-        name="get-club-calendar"
+        name="get-club-calendar",
     ),
-    path("polls/", include("clubs.polls.urls"))
+    path("polls/", include("clubs.polls.urls")),
 ]
