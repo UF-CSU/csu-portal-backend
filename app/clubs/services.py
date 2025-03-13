@@ -4,12 +4,20 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 import icalendar
-from clubs.models import (Club, ClubMembership, ClubRole, DayChoice, Event,
-                          EventAttendance, RecurringEvent)
-from core.abstracts.services import ServiceBase
 from django.core import exceptions
 from django.db import models
 from django.urls import reverse
+
+from clubs.models import (
+    Club,
+    ClubMembership,
+    ClubRole,
+    DayChoice,
+    Event,
+    EventAttendance,
+    RecurringEvent,
+)
+from core.abstracts.services import ServiceBase
 from users.models import User
 
 
@@ -138,89 +146,91 @@ class ClubService(ServiceBase[Club]):
             location=location,
             description=description,
         )
-    
+
     def create_calendar(self, name: str):
         cal = icalendar.Calendar()
-        cal.add('PRODID', '-//CSU Portal//UF CSU//EN')
-        cal.add('VERSION', '2.0')
-        cal.add('X-WR-CALNAME', name)
+        cal.add("PRODID", "-//CSU Portal//UF CSU//EN")
+        cal.add("VERSION", "2.0")
+        cal.add("X-WR-CALNAME", name)
         # Suggest refresh interval of 1hr
-        cal.add('X-PUBLISHED-TTL', 'PT1H')
+        cal.add("X-PUBLISHED-TTL", "PT1H")
         return cal
 
     def create_calendar_event(self, event: Event, tz: ZoneInfo):
         e = icalendar.Event()
-        e.add('SUMMARY', f'{event.name} | {event.club.name}')
+        e.add("SUMMARY", f"{event.name} | {event.club.name}")
         if event.description is not None:
-            e.add('DESCRIPTION', event.description)
+            e.add("DESCRIPTION", event.description)
         if event.start_at is not None and event.end_at is not None:
             local_start_at = event.start_at.replace(tzinfo=tz)
             local_end_at = event.end_at.replace(tzinfo=tz)
-            e.add('DTSTART', local_start_at)
-            e.add('DTEND', local_end_at)
+            e.add("DTSTART", local_start_at)
+            e.add("DTEND", local_end_at)
         if event.location is not None:
-            e.add('LOCATION', event.location)
+            e.add("LOCATION", event.location)
         return e
-    
+
     def get_event_calendar(self, event: Event):
         """Generates an ICS file for an event."""
         if event.club.id != self.obj.id:
             raise exceptions.BadRequest(
                 f'Event "{event}" does not belong to club {self.obj}.'
             )
-        
+
         # Initialize calendar
-        cal = self.create_calendar(f'{event.name} | {event.club.name}')
+        cal = self.create_calendar(f"{event.name} | {event.club.name}")
         cal.add("X-WR-CALDESC", event.description)
-        
+
         # Configure timezone
         local_tz = ZoneInfo("America/New_York")
-        
+
         # Create event
         e = self.create_calendar_event(event, local_tz)
-        
+
         # Add recurring event
         if event.recurring_event is not None:
-            days = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+            days = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
             options = {
-                'FREQ': 'WEEKLY',
-                'INTERVAL': 1,
-                'BYDAY': days[event.recurring_event.day]
+                "FREQ": "WEEKLY",
+                "INTERVAL": 1,
+                "BYDAY": days[event.recurring_event.day],
             }
             if event.recurring_event.end_date is not None:
-                until = datetime.combine(event.recurring_event.end_date, datetime.min.time())
+                until = datetime.combine(
+                    event.recurring_event.end_date, datetime.min.time()
+                )
                 aware_until = until.replace(tzinfo=local_tz)
-                options['UNTIL'] = aware_until
+                options["UNTIL"] = aware_until
 
-            e.add('RRULE', options)
+            e.add("RRULE", options)
 
         cal.add_component(e)
-        
+
         cal.add_missing_timezones()
-        
+
         buffer = io.BytesIO(cal.to_ical())
         buffer.seek(0)
         return buffer
-    
+
     def get_calendar(self):
         """Generates an ICS file for a club containing all future events."""
         # Initialize calendar
         cal = self.create_calendar(self.obj.name)
         cal.add("X-WR-CALDESC", f"Calendar for {self.obj.name}")
-        
+
         # Configure timezone
         local_tz = ZoneInfo("America/New_York")
-        
+
         # Get all events that start later than today
         now = datetime.now().replace(tzinfo=local_tz)
         query = Event.objects.filter(start_at__gt=now)
-        
+
         for event in query:
             e = self.create_calendar_event(event, local_tz)
             cal.add_component(e)
-        
+
         cal.add_missing_timezones()
-        
+
         buffer = io.BytesIO(cal.to_ical())
         buffer.seek(0)
         return buffer

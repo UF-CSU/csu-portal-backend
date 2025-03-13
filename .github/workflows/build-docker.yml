@@ -4,6 +4,9 @@ on:
     branches:
       - 'main'
       - 'production'
+    paths:
+      - 'Dockerfile'
+      - 'requirements.txt'
 
 jobs:
   check-docker-build:

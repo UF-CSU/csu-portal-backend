@@ -2,15 +2,15 @@
 Club views for API and rendering html pages.
 """
 
-
 import re
 
-from clubs.models import Club, Event
-from clubs.services import ClubService
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+
+from clubs.models import Club, Event
+from clubs.services import ClubService
 
 
 @login_required()
@@ -44,23 +44,26 @@ def record_attendance_view(request: HttpRequest, club_id: int, event_id: int):
 def download_event_calendar(request: HttpRequest, club_id: int, event_id: int):
     club = get_object_or_404(Club, id=club_id)
     event = get_object_or_404(Event, id=event_id)
-    
+
     club_svc = ClubService(club)
     file = club_svc.get_event_calendar(event)
-    
-    club_name = re.sub(r'\s+', '_', club.name)
-    event_name = re.sub(r'\s+', '_', event.name)
-    return FileResponse(file, as_attachment=True, filename=f"{club_name}_{event_name}.ics")
+
+    club_name = re.sub(r"\s+", "_", club.name)
+    event_name = re.sub(r"\s+", "_", event.name)
+    return FileResponse(
+        file, as_attachment=True, filename=f"{club_name}_{event_name}.ics"
+    )
 
 
 def download_club_calendar(request: HttpRequest, club_id: int):
     club = get_object_or_404(Club, id=club_id)
-    
+
     club_svc = ClubService(club)
     file = club_svc.get_calendar()
-    
-    club_name = re.sub(r'\s+', '_', club.name)
+
+    club_name = re.sub(r"\s+", "_", club.name)
     return FileResponse(file, as_attachment=True, filename=f"{club_name}.ics")
+
 
 @login_required()
 def available_clubs_view(request: HttpRequest):

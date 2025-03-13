@@ -261,8 +261,8 @@ SOCIALACCOUNT_PROVIDERS = {
         "APP": {
             "client_id": os.environ.get("GITHUB_CLIENT_ID", None),
             "secret": os.environ.get("GITHUB_CLIENT_SECRET", None),
-        }
-    }
+        },
+    },
 }
 
 SOCIALACCOUNT_QUERY_EMAIL = True

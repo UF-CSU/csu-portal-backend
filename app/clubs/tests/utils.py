@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from clubs.models import Club, Event, Team
+from lib.faker import fake
 
 CLUB_CREATE_PARAMS = {
     "name": "Test Club",
@@ -17,7 +18,16 @@ def create_test_club(name=None, **kwargs):
     if name is None:
         name = f"Test Club {uuid.uuid4()}"
 
-    return Club.objects.create(name=name, **kwargs)
+    alias = kwargs.pop("alias", None)
+    while not alias:
+        new_alias = "".join(fake.random_letters(5))
+
+        if Club.objects.filter(alias__iexact=new_alias).exists():
+            continue
+
+        alias = new_alias
+
+    return Club.objects.create(name=name, alias=alias, **kwargs)
 
 
 def create_test_event(
