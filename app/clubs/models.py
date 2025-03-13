@@ -7,6 +7,7 @@ from typing import ClassVar, Optional
 
 from django.contrib.auth.models import Permission
 from django.core import exceptions
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -14,7 +15,14 @@ from django.utils.timezone import datetime
 from django.utils.translation import gettext_lazy as _
 
 from analytics.models import Link
-from core.abstracts.models import ManagerBase, ModelBase, Scope, Tag, UniqueModel
+from core.abstracts.models import (
+    ManagerBase,
+    ModelBase,
+    Scope,
+    SocialProfile,
+    Tag,
+    UniqueModel,
+)
 from users.models import User
 from utils.dates import get_day_count
 from utils.helpers import get_full_url
@@ -32,20 +40,58 @@ class DayChoice(models.IntegerChoices):
     SUNDAY = 6, _("Sunday")
 
 
+class EventTag(Tag):
+    """Group together different types of events."""
+
+    pass
+
+
+class ClubTag(Tag):
+    """Group clubs together based on topics."""
+
+    pass
+
+
+def get_default_founding_year():
+    """Initializes default founding year to current year."""
+
+    return timezone.now().year
+
+
+def validate_max_founding_year(value: int):
+    """Ensure founding year is not greater than current year."""
+    current_year = timezone.now().year
+
+    if value > current_year:
+        raise ValueError(
+            f"A club cannot have been founded in the future. Founding year must be greater than {current_year}."
+        )
+
+
 class Club(UniqueModel):
     """Group of users."""
 
     scope = Scope.CLUB
-
     get_logo_filepath = UploadFilepathFactory("clubs/logos/")
 
     name = models.CharField(max_length=64, unique=True)
     logo = models.ImageField(upload_to=get_logo_filepath, blank=True, null=True)
 
+    alias = models.CharField(max_length=7, unique=True, null=True, blank=True)
+    about = models.TextField(blank=True, null=True)
+    founding_year = models.IntegerField(
+        default=get_default_founding_year,
+        validators=[MinValueValidator(1900), validate_max_founding_year],
+    )
+    contact_email = models.EmailField(null=True, blank=True)
+
+    tags = models.ManyToManyField(ClubTag, blank=True)
+
     # Relationships
     memberships: models.QuerySet["ClubMembership"]
     teams: models.QuerySet["Team"]
     roles: models.QuerySet["ClubRole"]
+    socials: models.QuerySet["ClubSocialProfile"]
 
     # Overrides
     @property
@@ -55,6 +101,24 @@ class Club(UniqueModel):
 
     class Meta:
         permissions = [("preview_club", "Can view a set of limited fields for a club.")]
+
+    def save(self, *args, **kwargs):
+        # On save, set default alias from name
+        try:
+            if self.alias is None and len(self.name) >= 3:
+                self.alias = self.name[0:3].capitalize()
+            elif self.alias is None:
+                self.alias = self.name.capitalize()
+        except Exception:
+            pass
+
+        return super().save(*args, **kwargs)
+
+
+class ClubSocialProfile(SocialProfile):
+    """Saves social media profile info for clubs."""
+
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="socials")
 
 
 class ClubRoleManager(ManagerBase["ClubRole"]):
@@ -307,10 +371,6 @@ class RecurringEvent(EventFields):
             end_date = self.end_date
 
         return get_day_count(self.start_date, end_date, self.day)
-
-
-class EventTag(Tag):
-    """Group together different types of events."""
 
 
 class EventManager(ManagerBase["Event"]):

@@ -217,3 +217,25 @@ class Tag(ModelBase):
     class Meta:
         abstract = True
         ordering = ["order", "name"]
+
+
+class SocialType(models.TextChoices):
+    """Different types of accepted social accounts."""
+
+    DISCORD = "discord", _("Discord")
+    INSTAGRAM = "instagram", _("Instagram")
+    FACEBOOK = "facebook", _("Facebook")
+    TWITTER = "twitter", _("Twitter (X)")
+
+
+class SocialProfile(ModelBase):
+    """Links to social media."""
+
+    url = models.URLField()
+    username = models.CharField()
+    social_type = models.CharField(choices=SocialType.choices)
+    order = models.IntegerField(default=0, blank=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["order", "id"]
