@@ -12,6 +12,7 @@ from clubs.models import (
     Event,
     EventAttendance,
     EventAttendanceLink,
+    EventTag,
     RecurringEvent,
     Team,
     TeamMembership,
@@ -136,6 +137,7 @@ class EventAdmin(admin.ModelAdmin):
     ordering = ("start_at",)
 
     inlines = (EventAttendenceLinkInlineAdmin, EventAttendanceInlineAdmin)
+    filter_horizontal = ("tags", "other_clubs")
 
 
 class TeamMembershipInlineAdmin(admin.TabularInline):
@@ -181,6 +183,7 @@ class ClubMembershipAdmin(ModelAdminBase):
 admin.site.register(Club, ClubAdmin)
 admin.site.register(ClubTag, ClubTagAdmin)
 admin.site.register(Event, EventAdmin)
+admin.site.register(EventTag)
 admin.site.register(RecurringEvent, RecurringEventAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(ClubMembership, ClubMembershipAdmin)
