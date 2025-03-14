@@ -30,6 +30,13 @@ def create_test_club(name=None, **kwargs):
     return Club.objects.create(name=name, alias=alias, **kwargs)
 
 
+def create_test_clubs(count=5, **kwargs):
+    """Create amount of clubs equal to count, returns queryset."""
+
+    ids = [create_test_club(**kwargs).id for _ in range(count)]
+    return Club.objects.filter(id__in=ids)
+
+
 def create_test_event(
     club: Club,
     name: str = "Test event",
