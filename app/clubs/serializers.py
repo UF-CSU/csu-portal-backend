@@ -141,3 +141,9 @@ class ClubMembershipCsvSerializer(CsvModelSerializer, ClubMembershipSerializer):
                 )
 
         return super().create(validated_data)
+
+
+class InviteClubMemberSerializer(serializers.Serializer):
+    """Define REST API fields for sending invites to new club members."""
+
+    emails = serializers.ListField(child=serializers.EmailField())

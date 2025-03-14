@@ -69,11 +69,30 @@ class ApiTestsBase(TestsBase):
         self.client = APIClient()
 
     def assertOk(self, reverse_url: str, reverse_kwargs=None):
+        """The response for a reversed url should be 200 ok."""
         reverse_kwargs = reverse_kwargs if reverse_kwargs else {}
         url = reverse(reverse_url, **reverse_kwargs)
         res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def assertStatusCode(
+        self, response: HttpResponse, status_code: int, message=None, **kwargs
+    ):
+        """Http Response should have status code."""
+
+        message = message if message else f"Responded with: {response.content}"
+        self.assertEqual(response.status_code, status_code, message, **kwargs)
+
+    def assertResOk(self, response: HttpResponse, **kwargs):
+        """Client response should be 200."""
+
+        self.assertStatusCode(response, status.HTTP_200_OK, **kwargs)
+
+    def assertResCreated(self, response: HttpResponse, **kwargs):
+        """Client response should be 201."""
+
+        self.assertStatusCode(response, status.HTTP_201_CREATED, **kwargs)
 
 
 class ViewTestsBase(ApiTestsBase):
