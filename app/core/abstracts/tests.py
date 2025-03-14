@@ -2,6 +2,7 @@ import os
 from typing import Optional, Type
 
 from django import forms
+from django.core import mail
 from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
@@ -129,3 +130,25 @@ class AuthViewsTestsBase(ViewTestsBase):
 
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+
+
+class EmailTestsBase(TestsBase):
+    """Testing utilities for sending emails."""
+
+    def assertEmailsSent(self, count: int):
+        """The email outbox length should equal given count."""
+
+        self.assertEqual(len(mail.outbox), count)
+
+    def assertInEmailBodies(self, substring: str):
+        """The sent emails should include the substring in the email bodies."""
+
+        for email in mail.outbox:
+            body = email.body
+
+            # Get all html attachments, most likely just one, and use them as body
+            if isinstance(email, mail.EmailMultiAlternatives):
+                bodies = [alt[0] for alt in email.alternatives if alt[1] == "text/html"]
+                body = "\n".join(bodies)
+
+            self.assertIn(substring, body)

@@ -92,3 +92,11 @@ tasks:
       - build
     cmds:
       - docker-compose run --rm app sh -c "python manage.py show_urls"
+
+  shell:
+    desc: 'Open interactive django shell'
+    interactive: true
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py shell"

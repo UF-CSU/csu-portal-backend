@@ -10,7 +10,7 @@ from django.utils import timezone
 from clubs.models import Club, DayChoice, Event
 from clubs.services import ClubService
 from clubs.tests.utils import create_test_club, join_club_url
-from core.abstracts.tests import TestsBase
+from core.abstracts.tests import EmailTestsBase, TestsBase
 from lib.faker import fake
 from users.tests.utils import create_test_user
 
@@ -29,7 +29,7 @@ class ClubServiceLogicTests(TestsBase):
     def test_join_link(self):
         """Join link should be correct."""
 
-        link = self.service.join_link
+        link = self.service.join_url
         self.assertEqual(link, join_club_url(self.club.id))
 
     def test_memberships(self):
@@ -59,6 +59,26 @@ class ClubServiceLogicTests(TestsBase):
             self.service.decrease_member_points(user, 6)
         mem.refresh_from_db()
         self.assertEqual(mem.points, 5)
+
+
+class ClubEmailTests(EmailTestsBase):
+    """Test emails that are sent in connection to clubs."""
+
+    def setUp(self):
+        self.club = create_test_club()
+        self.service = ClubService(self.club)
+        return super().setUp()
+
+    def test_club_invite(self):
+        """Club email invite should send, link should work."""
+        email_count = 5
+        emails = [fake.safe_email() for _ in range(email_count)]
+
+        self.service.send_email_invite(emails)
+        self.assertEmailsSent(email_count)
+
+        # URL functionality is tested in test_club_views.py
+        self.assertInEmailBodies(self.service.full_join_url)
 
 
 class ClubEventTests(TestsBase):

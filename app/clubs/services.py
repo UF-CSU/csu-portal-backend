@@ -3,11 +3,14 @@ from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo
 
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import icalendar
-from django.core import exceptions
+from django.core import exceptions, mail
 from django.db import models
 from django.urls import reverse
 
+from app.settings import DEFAULT_FROM_EMAIL
 from clubs.models import (
     Club,
     ClubMembership,
@@ -19,6 +22,7 @@ from clubs.models import (
 )
 from core.abstracts.services import ServiceBase
 from users.models import User
+from utils.helpers import get_full_url
 
 
 class ClubService(ServiceBase[Club]):
@@ -33,10 +37,16 @@ class ClubService(ServiceBase[Club]):
             raise exceptions.BadRequest(f"User is not a member of {self.obj}.")
 
     @property
-    def join_link(self):
-        """Get link for a new user to create account and register."""
+    def join_url(self):
+        """Get url path for a new user to create account and register."""
 
         return reverse("clubs:join", kwargs={"club_id": self.obj.id})
+
+    @property
+    def full_join_url(self):
+        """Gives the full url with protocol, FQDN, and path for joining club."""
+
+        return get_full_url(self.join_url)
 
     def add_member(self, user: User, roles: Optional[list[ClubRole]] = None):
         """Create membership for pre-existing user."""
@@ -235,16 +245,29 @@ class ClubService(ServiceBase[Club]):
         buffer.seek(0)
         return buffer
 
-    def get_registration_url(self):
-        """Return link to sign up page."""
-
-        base_url = reverse("clubs:register")
-        return f"{base_url}?club={self.obj.name}"
-
     def get_attendance_url(self, event: Event):
         """Visiting this link will register a user for an event."""
 
         return reverse("clubs:join-event", event_id=event.id)
+
+    def send_email_invite(self, emails: list[str]):
+        """Send email invite to list of emails."""
+
+        html_body = render_to_string(
+            "clubs/email_invite_template.html",
+            context={"invite_url": self.full_join_url},
+        )
+        text_body = strip_tags(html_body)
+
+        for email in emails:
+            message = mail.EmailMultiAlternatives(
+                from_email=DEFAULT_FROM_EMAIL,
+                subject=f"You have been invited to {self.obj.name}",
+                body=text_body,
+                to=[email],
+            )
+            message.attach_alternative(html_body, "text/html")
+            message.send()
 
     @classmethod
     def sync_recurring_event(cls, rec_ev: RecurringEvent):
