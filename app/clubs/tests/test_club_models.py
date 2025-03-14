@@ -7,8 +7,14 @@ from django.urls import reverse
 
 from analytics.models import Link
 from clubs.models import Club, ClubMembership, Event, Team, TeamMembership
-from clubs.tests.utils import CLUB_CREATE_PARAMS, CLUB_UPDATE_PARAMS, create_test_club
+from clubs.tests.utils import (
+    CLUB_CREATE_PARAMS,
+    CLUB_UPDATE_PARAMS,
+    create_test_club,
+    create_test_clubs,
+)
 from core.abstracts.tests import TestsBase
+from lib.faker import fake
 from users.tests.utils import create_test_user
 from utils.helpers import get_full_url
 
@@ -80,6 +86,20 @@ class ClubEventTests(TestsBase):
         expected_url = get_full_url(expected_url_path)
         self.assertEqual(link.target_url, expected_url)
         self.assertEqual(link.reference, "Default")
+
+    def test_prevent_event_overlapping_clubs(self):
+        """An event should not have fk to a club that exists in "other_clubs" field."""
+
+        primary_club = create_test_club()
+        clubs = create_test_clubs(count=5)
+
+        event = Event.objects.create(club=primary_club, name=fake.title())
+        event.other_clubs.add(*clubs)
+        self.assertEqual(event.other_clubs.count(), 5)
+
+        with self.assertRaises(exceptions.ValidationError):
+            event.other_clubs.add(primary_club)
+            event.save()
 
 
 class ClubTeamTests(TestsBase):

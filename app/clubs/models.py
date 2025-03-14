@@ -410,6 +410,7 @@ class Event(EventFields):
         blank=True,
         related_name="events",
     )
+    other_clubs = models.ManyToManyField(Club, blank=True)
 
     tags = models.ManyToManyField(EventTag, blank=True)
 
@@ -432,8 +433,19 @@ class Event(EventFields):
             models.UniqueConstraint(
                 fields=("start_at", "end_at", "club", "name"),
                 name="unique_event_name_per_timerange_per_club",
-            )
+            ),
         ]
+
+    def clean(self):
+        if self.id is None:
+            return super().clean()
+
+        if self.club in self.other_clubs.all():
+            raise exceptions.ValidationError(
+                "A club cannot be the host and in other_clubs's"
+            )
+
+        return super().clean()
 
 
 class EventAttendance(ModelBase):
