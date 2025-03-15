@@ -94,6 +94,27 @@ class ApiTestsBase(TestsBase):
 
         self.assertStatusCode(response, status.HTTP_201_CREATED, **kwargs)
 
+    def assertResAccepted(self, response: HttpResponse, **kwargs):
+        """Client response should be 202."""
+
+        self.assertStatusCode(response, status.HTTP_202_ACCEPTED, **kwargs)
+
+    def assertResUnauthorized(self, response: HttpResponse, **kwargs):
+        """Client response should be 401."""
+
+        self.assertStatusCode(response, status.HTTP_401_UNAUTHORIZED, **kwargs)
+
+
+class AuthApiTestsBase(ApiTestsBase):
+    """Testing utilities for apis where authentication is required."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = create_test_adminuser()
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
 
 class ViewTestsBase(ApiTestsBase):
     """Abstract testing utilities for app views."""

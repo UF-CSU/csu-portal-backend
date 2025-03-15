@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status, views
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from clubs.models import Club, ClubMembership
 from clubs.serializers import (
@@ -8,7 +9,8 @@ from clubs.serializers import (
     InviteClubMemberSerializer,
 )
 from clubs.services import ClubService
-from core.abstracts.viewsets import ModelViewSetBase
+from core.abstracts.viewsets import ModelViewSetBase, ViewSetBase
+from drf_spectacular.utils import extend_schema
 
 
 class ClubViewSet(ModelViewSetBase):
@@ -37,16 +39,21 @@ class ClubMembershipViewSet(ModelViewSetBase):
         serializer.save(club=club)
 
 
-class InviteClubMemberView(views.APIView):
+class InviteClubMemberView(GenericAPIView):
     """Creates a POST route for inviting club members."""
 
+    serializer_class = InviteClubMemberSerializer
+    authentication_classes = ViewSetBase.authentication_classes
+    permission_classes = ViewSetBase.permission_classes
+
+    @extend_schema(responses={202: None})
     def post(self, request, id: int, *args, **kwargs):
         club = get_object_or_404(Club, id=id)
-        serializer = InviteClubMemberSerializer(data=request.POST)
+        serializer = self.serializer_class(data=request.POST)
         serializer.is_valid(raise_exception=True)
 
         emails = serializer.data.get("emails", [])
 
         ClubService(club).send_email_invite(emails)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_202_ACCEPTED)
