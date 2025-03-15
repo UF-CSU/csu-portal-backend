@@ -8,7 +8,7 @@ from typing import ClassVar, Optional
 from django.contrib.auth.models import Permission
 from django.core import exceptions
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import datetime
@@ -232,8 +232,25 @@ class ClubMembership(ModelBase):
                 ),
                 condition=models.Q(owner=True),
                 name="only_one_owner_per_club",
-            )
+            ),
+            models.UniqueConstraint(
+                name="one_membership_per_user_and_club", fields=("club", "user")
+            ),
         ]
+
+    def add_roles(self, *roles, commit=True):
+        """Add ClubRole to membership."""
+
+        for role in roles:
+            # If there's an issue, reverse all db ops
+            with transaction.atomic():
+                if role in self.roles.all():
+                    continue
+
+                self.roles.add(role)
+
+                if commit:
+                    self.save()
 
     def delete(self, *args, **kwargs):
         assert self.owner is False, "Cannot delete owner of club."

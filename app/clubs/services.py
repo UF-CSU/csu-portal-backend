@@ -48,9 +48,23 @@ class ClubService(ServiceBase[Club]):
 
         return get_full_url(self.join_url)
 
-    def add_member(self, user: User, roles: Optional[list[ClubRole]] = None):
+    def add_member(
+        self, user: User, roles: Optional[list[ClubRole]] = None, fail_silently=True
+    ):
         """Create membership for pre-existing user."""
 
+        # If membership exists, just sync roles and continue
+        member_query = ClubMembership.objects.filter(club=self.obj, user=user)
+        if fail_silently and member_query.exists():
+            if not roles:
+                return
+
+            member = member_query.first()
+            member.add_roles(*roles)
+
+            return
+
+        # Create new membership
         return ClubMembership.objects.create(club=self.obj, user=user, roles=roles)
 
     def set_member_role(self, user: User, role: ClubRole | str):
@@ -61,7 +75,7 @@ class ClubService(ServiceBase[Club]):
 
         member = self._get_user_membership(user)
         member.roles.clear()
-        member.roles.add(role)
+        member.add_roles(role)
 
     def add_member_role(self, user: User, role: ClubRole | str):
         """Add role to member's roles."""
@@ -70,7 +84,7 @@ class ClubService(ServiceBase[Club]):
             role = self.obj.roles.get(name=role)
 
         member = self._get_user_membership(user)
-        member.roles.add(role)
+        member.add_roles(role)
 
     def increase_member_points(self, user: User, amount: int = 1):
         """Give the user more coins."""
