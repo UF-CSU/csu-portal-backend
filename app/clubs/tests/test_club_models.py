@@ -65,6 +65,21 @@ class BaseModelTests(TestsBase):
         self.assertEqual(obj_count, 0)
 
 
+class ClubModelTests(TestsBase):
+    """Tests for club models."""
+
+    def test_one_membership_per_user(self):
+        """A user should only be able to have one membership per club."""
+
+        club = create_test_club()
+        user = create_test_user()
+
+        ClubMembership.objects.create(club=club, user=user)
+
+        with self.assertRaises(exceptions.ValidationError):
+            ClubMembership.objects.create(club=club, user=user)
+
+
 class ClubEventTests(TestsBase):
     """Unit tests for club events."""
 

@@ -3,11 +3,14 @@ from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo
 
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import icalendar
-from django.core import exceptions
+from django.core import exceptions, mail
 from django.db import models
 from django.urls import reverse
 
+from app.settings import DEFAULT_FROM_EMAIL
 from clubs.models import (
     Club,
     ClubMembership,
@@ -19,6 +22,7 @@ from clubs.models import (
 )
 from core.abstracts.services import ServiceBase
 from users.models import User
+from utils.helpers import get_full_url
 
 
 class ClubService(ServiceBase[Club]):
@@ -33,14 +37,34 @@ class ClubService(ServiceBase[Club]):
             raise exceptions.BadRequest(f"User is not a member of {self.obj}.")
 
     @property
-    def join_link(self):
-        """Get link for a new user to create account and register."""
+    def join_url(self):
+        """Get url path for a new user to create account and register."""
 
         return reverse("clubs:join", kwargs={"club_id": self.obj.id})
 
-    def add_member(self, user: User, roles: Optional[list[ClubRole]] = None):
+    @property
+    def full_join_url(self):
+        """Gives the full url with protocol, FQDN, and path for joining club."""
+
+        return get_full_url(self.join_url)
+
+    def add_member(
+        self, user: User, roles: Optional[list[ClubRole]] = None, fail_silently=True
+    ):
         """Create membership for pre-existing user."""
 
+        # If membership exists, just sync roles and continue
+        member_query = ClubMembership.objects.filter(club=self.obj, user=user)
+        if fail_silently and member_query.exists():
+            if not roles:
+                return
+
+            member = member_query.first()
+            member.add_roles(*roles)
+
+            return
+
+        # Create new membership
         return ClubMembership.objects.create(club=self.obj, user=user, roles=roles)
 
     def set_member_role(self, user: User, role: ClubRole | str):
@@ -51,7 +75,7 @@ class ClubService(ServiceBase[Club]):
 
         member = self._get_user_membership(user)
         member.roles.clear()
-        member.roles.add(role)
+        member.add_roles(role)
 
     def add_member_role(self, user: User, role: ClubRole | str):
         """Add role to member's roles."""
@@ -60,7 +84,7 @@ class ClubService(ServiceBase[Club]):
             role = self.obj.roles.get(name=role)
 
         member = self._get_user_membership(user)
-        member.roles.add(role)
+        member.add_roles(role)
 
     def increase_member_points(self, user: User, amount: int = 1):
         """Give the user more coins."""
@@ -235,16 +259,29 @@ class ClubService(ServiceBase[Club]):
         buffer.seek(0)
         return buffer
 
-    def get_registration_url(self):
-        """Return link to sign up page."""
-
-        base_url = reverse("clubs:register")
-        return f"{base_url}?club={self.obj.name}"
-
     def get_attendance_url(self, event: Event):
         """Visiting this link will register a user for an event."""
 
         return reverse("clubs:join-event", event_id=event.id)
+
+    def send_email_invite(self, emails: list[str]):
+        """Send email invite to list of emails."""
+
+        html_body = render_to_string(
+            "clubs/email_invite_template.html",
+            context={"invite_url": self.full_join_url},
+        )
+        text_body = strip_tags(html_body)
+
+        for email in emails:
+            message = mail.EmailMultiAlternatives(
+                from_email=DEFAULT_FROM_EMAIL,
+                subject=f"You have been invited to {self.obj.name}",
+                body=text_body,
+                to=[email],
+            )
+            message.attach_alternative(html_body, "text/html")
+            message.send()
 
     @classmethod
     def sync_recurring_event(cls, rec_ev: RecurringEvent):

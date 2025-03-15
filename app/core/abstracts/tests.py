@@ -2,6 +2,7 @@ import os
 from typing import Optional, Type
 
 from django import forms
+from django.core import mail
 from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
@@ -68,11 +69,51 @@ class ApiTestsBase(TestsBase):
         self.client = APIClient()
 
     def assertOk(self, reverse_url: str, reverse_kwargs=None):
+        """The response for a reversed url should be 200 ok."""
         reverse_kwargs = reverse_kwargs if reverse_kwargs else {}
         url = reverse(reverse_url, **reverse_kwargs)
         res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def assertStatusCode(
+        self, response: HttpResponse, status_code: int, message=None, **kwargs
+    ):
+        """Http Response should have status code."""
+
+        message = message if message else f"Responded with: {response.content}"
+        self.assertEqual(response.status_code, status_code, message, **kwargs)
+
+    def assertResOk(self, response: HttpResponse, **kwargs):
+        """Client response should be 200."""
+
+        self.assertStatusCode(response, status.HTTP_200_OK, **kwargs)
+
+    def assertResCreated(self, response: HttpResponse, **kwargs):
+        """Client response should be 201."""
+
+        self.assertStatusCode(response, status.HTTP_201_CREATED, **kwargs)
+
+    def assertResAccepted(self, response: HttpResponse, **kwargs):
+        """Client response should be 202."""
+
+        self.assertStatusCode(response, status.HTTP_202_ACCEPTED, **kwargs)
+
+    def assertResUnauthorized(self, response: HttpResponse, **kwargs):
+        """Client response should be 401."""
+
+        self.assertStatusCode(response, status.HTTP_401_UNAUTHORIZED, **kwargs)
+
+
+class AuthApiTestsBase(ApiTestsBase):
+    """Testing utilities for apis where authentication is required."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = create_test_adminuser()
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
 
 class ViewTestsBase(ApiTestsBase):
@@ -129,3 +170,25 @@ class AuthViewsTestsBase(ViewTestsBase):
 
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+
+
+class EmailTestsBase(TestsBase):
+    """Testing utilities for sending emails."""
+
+    def assertEmailsSent(self, count: int):
+        """The email outbox length should equal given count."""
+
+        self.assertEqual(len(mail.outbox), count)
+
+    def assertInEmailBodies(self, substring: str):
+        """The sent emails should include the substring in the email bodies."""
+
+        for email in mail.outbox:
+            body = email.body
+
+            # Get all html attachments, most likely just one, and use them as body
+            if isinstance(email, mail.EmailMultiAlternatives):
+                bodies = [alt[0] for alt in email.alternatives if alt[1] == "text/html"]
+                body = "\n".join(bodies)
+
+            self.assertIn(substring, body)

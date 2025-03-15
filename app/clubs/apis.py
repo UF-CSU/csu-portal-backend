@@ -13,4 +13,7 @@ router.register(
 
 app_name = "api-clubs"
 
-urlpatterns = [path("", include(router.urls))]
+urlpatterns = [
+    path("", include(router.urls)),
+    path("clubs/<int:id>/invite/", viewsets.InviteClubMemberView.as_view(), name="invite"),
+]

@@ -98,6 +98,13 @@ class ClubViewTests(ViewTestsBase):
         )
         self.assertEqual(ClubMembership.objects.all().count(), 1)
 
+        # If user clicks link again, it should skip adding membership
+        res = self.client.get(url)
+        self.assertRedirects(
+            res, expected_url=redirect_url, status_code=status.HTTP_302_FOUND
+        )
+        self.assertEqual(ClubMembership.objects.all().count(), 1)
+
     def test_join_event_view(self):
         """Should record attendance when joining event."""
 

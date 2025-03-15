@@ -25,6 +25,11 @@
       "name": "typing_extensions",
       "depth": 3,
       "includeAllSymbols": true
+    },
+    {
+      "name": "drf_spectacular",
+      "depth": 3,
+      "includeAllSymbols": true
     }
   ],
   "[python]": {
